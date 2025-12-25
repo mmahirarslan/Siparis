@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DynSmart Bayi & Teklif Robotu</title>
+<style>
+    /* GENEL KAPLAYICI */
+    .ds-master { font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 1200px; margin: 20px auto; background: #fff; position: relative; }
+    
+    /* GÖRSEL TABLO */
+    .ds-container { border: 2px solid #217346; box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin-bottom: 20px; background: #fff; border-radius: 8px; overflow: hidden; }
+    
+    /* HEADER ALANI */
+    .ds-header-area {
+        background: #217346; 
+        padding: 15px 20px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+        color: white;
+    }
+    .ds-title { font-size: 20px; font-weight: bold; margin: 0; }
+    
+    .header-controls { display: flex; gap: 15px; align-items: center; }
+
+    /* RESET BUTTON */
+    .reset-btn {
+        background: #ef4444; 
+        color: white; 
+        border: none; 
+        padding: 5px 12px; 
+        border-radius: 4px; 
+        font-size: 11px; 
+        cursor: pointer; 
+        font-weight: bold;
+    }
+    .reset-btn:hover { background: #dc2626; }
+
+    /* MÜŞTERİ BİLGİ ALANI */
+    .client-info-bar {
+        background: #f0fdf4;
+        padding: 15px 20px;
+        border-bottom: 1px solid #dcfce7;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+    .client-input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #217346;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #1e293b;
+    }
+
+    /* TABLO TASARIMI */
+    .excel-grid { width: 100%; border-collapse: collapse; background: white; }
+    .excel-grid th { background: #e6e6e6; border: 1px solid #bbb; padding: 10px; font-size: 12px; color: #333; text-transform: uppercase; }
+    .excel-grid td { border: 1px solid #ddd; padding: 6px 10px; font-size: 13px; color: #444; height: 35px; }
+    
+    .h-center { text-align: center; font-weight: bold; color: #555; background: #f9f9f9; }
+    
+    /* GİRİŞ KUTULARI (DÜZENLENEBİLİR) */
+    .inp-common { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 13px; text-align: left; }
+    .inp-common:focus { border: 1px solid #217346; outline: none; background: #fff; }
+    .editable-field { color: #333; font-weight: 600; }
+    .editable-price { text-align: right; color: #555; font-family: 'Consolas', monospace; }
+    
+    .inp-qty { background: #fff; border: 1px solid #999; text-align: center; font-weight: bold; width: 60px; padding: 6px; border-radius: 4px; color: #333; }
+    /* Fiyatlandırılan Adet Kutusu */
+    .inp-price-qty { background: #f0fdf4; border: 2px solid #217346 !important; text-align: center; font-weight: bold; width: 70px; padding: 6px; border-radius: 4px; color: #166534; }
+    
+    .calc-val { background: #fafafa; text-align: right; font-family: 'Consolas', monospace; font-weight: 600; }
+    .gap-row { background: #f4f4f4; height: 12px !important; border: none; }
+    .gap-row td { border: none; border-left: 1px solid #ddd; border-right: 1px solid #ddd; }
+
+    /* ALT PANEL */
+    .panel-area { display: grid; grid-template-columns: 1.3fr 1fr; gap: 25px; padding: 25px; background: #f8fafc; border-top: 3px solid #217346; }
+    .inputs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .ctrl-item { background: #fff; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    .ctrl-item label { display: block; font-size: 9px; font-weight: 800; color: #64748b; margin-bottom: 2px; text-transform: uppercase; }
+    .ctrl-item input { width: 100%; border: none; font-weight: 800; font-size: 18px; color: #0f172a; text-align: center; outline: none; }
+
+    .summary-card { background: #1e293b; color: #fff; padding: 25px; border-radius: 12px; text-align: right; display: flex; flex-direction: column; justify-content: center; }
+    .sum-row { margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+    .big-num { font-size: 28px; font-weight: 800; color: #4ade80; display: block; }
+    .mid-num { font-size: 22px; font-weight: 700; color: #60a5fa; display: block; }
+    .lbl { font-size: 11px; opacity: 0.7; }
+
+    /* BUTON */
+    .btn-area { text-align: center; padding: 20px; }
+    .word-btn {
+        background-color: #2b579a;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    .word-btn:hover { background-color: #1e3f72; transform: translateY(-2px); }
+
+    /* Toggle Switch */
+    .admin-toggle-wrap { display: flex; align-items: center; gap: 10px; font-size: 13px; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 20px; }
+    .ds-switch { position: relative; display: inline-block; width: 34px; height: 20px; }
+    .ds-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #4ade80; }
+    input:checked + .slider:before { transform: translateX(14px); }
+    
+    .editing-active .editable-field, 
+    .editing-active .editable-price { border: 1px solid #3b82f6; background: #eff6ff; padding: 2px 5px; }
+</style>
+</head>
+<body>
+
+<div class="ds-master" id="appRoot">
+    <div id="printArea" class="ds-container">
+        
+        <div class="ds-header-area">
+            <div class="ds-title">DynSmart Bayi & Teklif Robotu</div>
+            <div class="header-controls">
+                <button class="reset-btn" onclick="resetToDefaults()">↺ Fabrika Ayarlarına Dön</button>
+                <div class="admin-toggle-wrap">
+                    <span>Fiyat Düzenle</span>
+                    <label class="ds-switch">
+                        <input type="checkbox" id="editModeToggle" onchange="toggleEditMode()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="client-info-bar">
+            <label style="font-size:13px; font-weight:bold; color:#217346;">MÜŞTERİ ÜNVANI:</label>
+            <input type="text" id="clientName" class="client-input" placeholder="Firma adını buraya yazınız..." oninput="saveCurrentState()">
+        </div>
+
+        <table class="excel-grid" id="mainExcel">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">Tip</th>
+                    <th style="text-align:left;">Ürün Adı</th>
+                    <th style="width: 80px;">Adet</th>
+                    <th style="width: 100px;">Fiyat Adet</th>
+                    <th style="width: 100px;">Birim ($)</th>
+                    <th style="width: 120px;">Tutar ($)</th>
+                    <th style="width: 120px;">Yenileme ($)</th>
+                </tr>
+            </thead>
+            <tbody id="gridBody">
+            </tbody>
+        </table>
+
+        <div class="panel-area">
+            <div class="inputs-grid">
+                <div class="ctrl-item"><label>DÖVİZ KUR (TL)</label><input type="number" id="vKur" value="43" min="0" oninput="saveAndCalc()"></div>
+                <div class="ctrl-item" style="opacity:0"></div>
+                <div class="ctrl-item"><label>MÜŞTERİ İSKONTO (%)</label><input type="number" id="vMIsk" value="50" min="0" oninput="saveAndCalc()"></div>
+                <div class="ctrl-item"><label>BAYİ PAYI (%)</label><input type="number" id="vBPay" value="50" min="0" oninput="saveAndCalc()"></div>
+                <div class="ctrl-item"><label>YENİLEME İSKONTO (%)</label><input type="number" id="vYIsk" value="50" min="0" oninput="saveAndCalc()"></div>
+                <div class="ctrl-item"><label>YENİLEME BAYİ PAYI (%)</label><input type="number" id="vYBPay" value="50" min="0" oninput="saveAndCalc()"></div>
+            </div>
+
+            <div class="summary-card">
+                <div class="sum-row">
+                    <span class="lbl">MÜŞTERİ TOPLAM (KURULUM)</span>
+                    <span id="txtMusteri" class="big-num">0,00 TL</span>
+                </div>
+                <div class="sum-row">
+                    <span class="lbl">SENİN BAYİ PAYIN (KURULUM)</span>
+                    <span id="txtBayi" class="mid-num">0,00 TL</span>
+                </div>
+                <div class="sum-row" style="padding-top:10px;">
+                    <span class="lbl" style="color:#fbbf24;">GELECEK YIL YENİLEME (MÜŞTERİ)</span>
+                    <span id="txtYenileme" style="font-size:16px; font-weight:bold; color:#fbbf24;">0,00 TL</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-area">
+        <button class="word-btn" onclick="createProfessionalWord()">
+            <span>📄</span> Teklifi Word Olarak İndir
+        </button>
+    </div>
+</div>
+
+<script>
+    // GÜVENLİK: XSS Koruması için HTML temizleme
+    function escapeHtml(text) {
+        if (text == null) return "";
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // VARSAYILAN VERİ SETİ (Fabrika Ayarları)
+    const defaultData = [
+        {t: "-", n: "DynSmart Core ANA PAKET", p: 1499, r: 0.7, q: 0},
+        {t: "EK", n: "Şube", p: 249, r: 0.1, q: 0},
+        {t: "EK", n: "Kasa", p: 29, r: 0.1, q: 0},
+        {gap: true},
+        {t: "EK", n: "DynSmart Kullanıcı", p: 149, r: 0.1, q: 0},
+        {t: "EK", n: "Android DynSmart Mobil", p: 99, r: 0.1, q: 0},
+        {t: "EK", n: "DynCash", p: 149, r: 0.1, q: 0},
+        {gap: true},
+        {t: "EK", n: "Tek Pazaryeri", p: 349, r: 0.3, q: 0},
+        {t: "EK", n: "Android Mobil Pazaryeri Ekranı", p: 249, r: 0.3, q: 0},
+        {gap: true},
+        {t: "EK", n: "Tüm Pazaryerleri", p: 799, r: 0.3, q: 0},
+        {t: "EK", n: "Şube (Ek)", p: 249, r: 0.1, q: 0},
+        {t: "EK", n: "Yazar Kasa", p: 149, r: 0.1, q: 0},
+        {t: "EK", n: "Android Mobil Pazaryeri Ekranı (Ek)", p: 249, r: 0.3, q: 0}
+    ];
+
+    // Aktif Veri Seti
+    let activeData = JSON.parse(localStorage.getItem('ds_data_v3')) || JSON.parse(JSON.stringify(defaultData));
+
+    // Yükleme
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedParams = JSON.parse(localStorage.getItem('ds_params_v3'));
+        if (savedParams) {
+            document.getElementById('vKur').value = savedParams.kur;
+            document.getElementById('vMIsk').value = savedParams.mIsk;
+            document.getElementById('vBPay').value = savedParams.bPay;
+            document.getElementById('vYIsk').value = savedParams.yIsk;
+            document.getElementById('vYBPay').value = savedParams.yBPay;
+            document.getElementById('clientName').value = savedParams.client;
+        }
+        renderTable();
+        calcAll();
+    });
+
+    // Tablo Çizimi
+    function renderTable() {
+        const grid = document.getElementById('gridBody');
+        grid.innerHTML = "";
+        
+        activeData.forEach((d, i) => {
+            if(d.gap) {
+                grid.innerHTML += `<tr class="gap-row"><td colspan="7"></td></tr>`;
+                return;
+            }
+            
+            const isMain = d.n.includes('ANA');
+            const bgStyle = isMain ? 'background:#fefce8;' : '';
+            
+            grid.innerHTML += `
+                <tr style="${bgStyle}" data-idx="${i}">
+                    <td class="h-center">${escapeHtml(d.t)}</td>
+                    <td><input class="inp-common editable-field" value="${escapeHtml(d.n)}" readonly oninput="updateData(${i}, 'n', this.value)"></td>
+                    <td style="text-align:center;"><input type="number" class="inp-qty js-qty" value="${d.q}" min="0" oninput="syncQty(this, ${i})"></td>
+                    <td style="text-align:center;"><input type="number" class="inp-price-qty js-p-qty" value="0" readonly></td>
+                    <td><input type="number" class="inp-common editable-price js-base-price" value="${d.p}" min="0" readonly oninput="updateData(${i}, 'p', this.value)"></td>
+                    <td class="calc-val js-l-usd">0.00</td>
+                    <td class="calc-val js-l-renew">0.00</td>
+                </tr>
+            `;
+        });
+        
+        toggleEditMode();
+    }
+
+    function updateData(index, key, value) {
+        if (key === 'p') {
+            value = parseFloat(value);
+            if(isNaN(value) || value < 0) value = 0;
+        }
+        activeData[index][key] = value;
+        saveCurrentState();
+        calcAll();
+    }
+
+    function syncQty(el, index) {
+        let val = parseFloat(el.value);
+        if(isNaN(val) || val < 0) {
+            val = 0; 
+            el.value = 0;
+        }
+        activeData[index].q = val;
+        saveCurrentState();
+        calcAll();
+    }
+
+    function toggleEditMode() {
+        const isChecked = document.getElementById('editModeToggle').checked;
+        const root = document.getElementById('appRoot');
+        const fields = document.querySelectorAll('.editable-field, .editable-price');
+        
+        if(isChecked) {
+            root.classList.add('editing-active');
+            fields.forEach(el => el.removeAttribute('readonly'));
+        } else {
+            root.classList.remove('editing-active');
+            fields.forEach(el => el.setAttribute('readonly', true));
+        }
+    }
+
+    function saveAndCalc() {
+        const inputs = document.querySelectorAll('.panel-area input[type="number"]');
+        inputs.forEach(inp => {
+            if(parseFloat(inp.value) < 0) inp.value = 0;
+        });
+        saveCurrentState();
+        calcAll();
+    }
+
+    function saveCurrentState() {
+        localStorage.setItem('ds_data_v3', JSON.stringify(activeData));
+        const params = {
+            kur: document.getElementById('vKur').value,
+            mIsk: document.getElementById('vMIsk').value,
+            bPay: document.getElementById('vBPay').value,
+            yIsk: document.getElementById('vYIsk').value,
+            yBPay: document.getElementById('vYBPay').value,
+            client: document.getElementById('clientName').value
+        };
+        localStorage.setItem('ds_params_v3', JSON.stringify(params));
+    }
+
+    function resetToDefaults() {
+        if(confirm("Tüm değişiklikler silinecek ve varsayılan fiyatlara dönülecek. Onaylıyor musunuz?")) {
+            localStorage.removeItem('ds_data_v3');
+            localStorage.removeItem('ds_params_v3');
+            location.reload();
+        }
+    }
+
+    // --- ÖZEL MANTIK YARDIMCISI ---
+    function getBillableQty(item, allItems) {
+        let inputQty = parseFloat(item.q) || 0;
+        
+        // Şube Sayısını Bul
+        const branchItem = allItems.find(x => x.n === "Şube");
+        const totalBranches = branchItem ? (parseFloat(branchItem.q) || 0) : 0;
+
+        // Kural 1: Şube (İlk şube bedava / Ana Pakete dahil)
+        if (item.n === "Şube") {
+            return Math.max(0, inputQty - 1);
+        }
+
+        // Kural 2: Kasa (Her şube için 1 kasa bedava)
+        // Eğer hiç şube girilmediyse (sadece ana paket), yine de 1 kasa hakkı (Merkez için) düşülür.
+        if (item.n === "Kasa") {
+            // Şube sayısı 0 ise bile 1 (Merkez) kabul et
+            let deduction = totalBranches < 1 ? 1 : totalBranches;
+            return Math.max(0, inputQty - deduction);
+        }
+
+        return inputQty;
+    }
+
+    // HESAPLAMA MOTORU
+    function calcAll() {
+        const kur = parseFloat(document.getElementById('vKur').value) || 0;
+        const mIsk = (100 - (parseFloat(document.getElementById('vMIsk').value) || 0)) / 100;
+        const bPay = (parseFloat(document.getElementById('vBPay').value) || 0) / 100;
+        const yIsk = (100 - (parseFloat(document.getElementById('vYIsk').value) || 0)) / 100;
+
+        let totalMUSD = 0;
+        let totalRUSD = 0;
+
+        activeData.forEach((d, i) => {
+            if(d.gap) return;
+            const row = document.querySelector(`tr[data-idx="${i}"]`);
+            if(!row) return;
+
+            // Ödenecek Adedi Hesapla (Kurala göre)
+            const billableQty = getBillableQty(d, activeData);
+
+            const price = d.p;
+            const rRate = d.r;
+
+            const valMusteri = billableQty * price * mIsk;
+            const valRenew = billableQty * price * rRate * yIsk;
+
+            // Ekrana Yaz
+            row.querySelector('.js-l-usd').innerText = valMusteri.toFixed(2);
+            row.querySelector('.js-l-renew').innerText = valRenew.toFixed(2);
+            
+            // Görsel Inputları Güncelle
+            const qInput = row.querySelector('.js-qty');
+            if(qInput && document.activeElement !== qInput) qInput.value = d.q;
+            
+            const pInput = row.querySelector('.js-p-qty');
+            if(pInput) {
+                pInput.value = billableQty;
+                // Bedava/İndirimli ise rengi değiştir
+                if(d.q > billableQty) {
+                    pInput.style.backgroundColor = "#dcfce7";
+                    pInput.style.color = "#166534";
+                } else {
+                    pInput.style.backgroundColor = "#f0fdf4"; // Normal
+                    pInput.style.color = "#166534";
+                }
+            }
+
+            totalMUSD += valMusteri;
+            totalRUSD += valRenew;
+        });
+
+        const tlMusteri = totalMUSD * kur;
+        const tlBayi = tlMusteri * bPay;
+        const tlRenew = totalRUSD * kur;
+
+        document.getElementById('txtMusteri').innerText = tlMusteri.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + " TL";
+        document.getElementById('txtBayi').innerText = tlBayi.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + " TL";
+        document.getElementById('txtYenileme').innerText = tlRenew.toLocaleString('tr-TR', {minimumFractionDigits: 2}) + " TL";
+    }
+
+    // WORD ÇIKTISI
+    function createProfessionalWord() {
+        let rawClientName = document.getElementById('clientName').value || "Sayın Müşteri";
+        let safeFilename = rawClientName.replace(/[^a-zA-Z0-9şŞıİğĞüÜöÖçÇ\s-_]/g, "").trim().replace(/\s+/g, "_");
+        
+        const dateStr = new Date().toLocaleDateString('tr-TR');
+        const kur = escapeHtml(document.getElementById('vKur').value);
+        const totalTL = escapeHtml(document.getElementById('txtMusteri').innerText);
+        const renewTL = escapeHtml(document.getElementById('txtYenileme').innerText);
+
+        let tableRows = "";
+        
+        activeData.forEach(d => {
+            if(d.gap) return;
+            
+            // Sıfır adetli ürünleri Word'e ekleme (Opsiyonel, şu an ekliyor ama 0 görünüyor)
+            // if(d.q <= 0) return; 
+
+            const mIsk = (100 - parseFloat(document.getElementById('vMIsk').value || 0)) / 100;
+            const yIsk = (100 - parseFloat(document.getElementById('vYIsk').value || 0)) / 100;
+            
+            // Word için de aynı kuralı uygula
+            const billableQty = getBillableQty(d, activeData);
+
+            const total = (billableQty * d.p * mIsk).toFixed(2);
+            const renew = (billableQty * d.p * d.r * yIsk).toFixed(2);
+
+            // Tabloda: "Adet" sütununa girilen adedi, "Fiyat" sütununa hesaplanan tutarı yazıyoruz.
+            // Müşteri "3 Kasa istedim, neden fiyatı düşük?" diye sorarsa "Pakete dahil" dersiniz.
+            tableRows += `
+                <tr>
+                    <td style="padding:5px; border:1px solid #ccc;">${escapeHtml(d.n)}</td>
+                    <td style="padding:5px; border:1px solid #ccc; text-align:center;">${d.q}</td>
+                    <td style="padding:5px; border:1px solid #ccc; text-align:right;">$${d.p}</td>
+                    <td style="padding:5px; border:1px solid #ccc; text-align:right;">$${total}</td>
+                    <td style="padding:5px; border:1px solid #ccc; text-align:right;">$${renew}</td>
+                </tr>
+            `;
+        });
+
+        const wordContent = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>Teklif</title></head>
+            <body style="font-family: Arial, sans-serif;">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <h1 style="color:#217346; margin:0;">DynSmart Teklif Formu</h1>
+                    <p style="color:#666; font-size:12px;">Tarih: ${dateStr}</p>
+                </div>
+                <div style="background:#f0fdf4; padding:10px; border:1px solid #217346; margin-bottom:20px;">
+                    <strong>Müşteri:</strong> ${escapeHtml(rawClientName)} <br>
+                    <strong>Döviz Kuru:</strong> ${kur} TL
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr style="background-color:#e6e6e6;">
+                            <th style="padding:8px; border:1px solid #999; text-align:left;">Ürün / Hizmet</th>
+                            <th style="padding:8px; border:1px solid #999;">İstenen Adet</th>
+                            <th style="padding:8px; border:1px solid #999;">Birim ($)</th>
+                            <th style="padding:8px; border:1px solid #999;">Tutar ($)</th>
+                            <th style="padding:8px; border:1px solid #999;">Yenileme ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+                <div style="margin-top:20px; text-align:right;">
+                    <h3 style="margin:5px 0;">TOPLAM KURULUM BEDELİ: <span style="color:#217346;">${totalTL}</span></h3>
+                    <p style="margin:5px 0; color:#b45309;">Yıllık Yenileme Bedeli: ${renewTL}</p>
+                    <p style="margin:5px 0; font-size:11px; color:#666;">(Fiyatlara KDV Dahil Değildir)</p>
+                </div>
+                <br><br><br>
+                <table style="width:100%;">
+                    <tr>
+                        <td style="width:50%; text-align:center;"><strong>Onaylayan (Müşteri)</strong><br><br><br>____________________</td>
+                        <td style="width:50%; text-align:center;"><strong>DynSmart Yetkili</strong><br><br><br>____________________</td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob(['\ufeff', wordContent], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `DynSmart_Teklif_${safeFilename}.doc`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+</body>
+</html>
